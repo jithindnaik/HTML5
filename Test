@@ -1,18 +1,40 @@
-progress$: Observable<number> = of(0);
-
-  // Simulate progress update
-  startLoading() {
-    this.progress$ = new Observable(observer => {
-      let progress = 0;
-      const interval = setInterval(() => {
-        if (progress >= 100) {
-          clearInterval(interval);
-          observer.complete();
-        } else {
-          progress += 10;
-          observer.next(progress);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Infinite Linear Loading Animation</title>
+    <style>
+        .loader {
+            width: 100%;
+            height: 10px; /* Adjust the height of the line */
+            overflow: hidden;
+            background-color: #f0f0f0;
+            position: relative;
         }
-      }, 500);
-    });
-  }
-}
+
+        .loader::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, #3498db, transparent);
+            animation: loading 2s infinite linear;
+        }
+
+        @keyframes loading {
+            from {
+                left: -100%;
+            }
+            to {
+                left: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loader"></div>
+</body>
+</html>
