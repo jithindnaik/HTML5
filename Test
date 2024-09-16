@@ -1,142 +1,78 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Utils } from './utils';
 
-@Component({
-  selector: 'app-image-viewer',
-  templateUrl: './image-viewer.component.html',
-  styleUrls: ['./image-viewer.component.css']
-})
-export class ImageViewerComponent {
-  images: string[] = [
-    'https://example.com/image1.jpg',
-    'https://example.com/image2.jpg',
-    'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD...',
-    // Add more URLs or base64 strings here
-  ];
+describe('Utils', () => {
+  // 1. Test for isNullOrUndefinedOrEmpty
+  describe('isNullOrUndefinedOrEmpty', () => {
+    test('should return true for null', () => {
+      expect(Utils.isNullOrUndefinedOrEmpty(null)).toBe(true);
+    });
 
-  currentIndex: number = 0;
-  scale: number = 1;
-  rotation: number = 0;
-  isFullScreen: boolean = false;
+    test('should return true for undefined', () => {
+      expect(Utils.isNullOrUndefinedOrEmpty(undefined)).toBe(true);
+    });
 
-  // Panning variables
-  isPanning: boolean = false;
-  startX: number = 0;
-  startY: number = 0;
-  translateX: number = 0;
-  translateY: number = 0;
-  lastTranslateX: number = 0;
-  lastTranslateY: number = 0;
+    test('should return true for empty string', () => {
+      expect(Utils.isNullOrUndefinedOrEmpty('')).toBe(true);
+    });
 
-  constructor(private el: ElementRef) {}
+    test('should return false for non-empty string', () => {
+      expect(Utils.isNullOrUndefinedOrEmpty('hello')).toBe(false);
+    });
 
-  get currentImage() {
-    return this.images[this.currentIndex];
-  }
+    test('should return false for other types (number, object)', () => {
+      expect(Utils.isNullOrUndefinedOrEmpty(123)).toBe(false);
+      expect(Utils.isNullOrUndefinedOrEmpty({})).toBe(false);
+    });
+  });
 
-  nextImage() {
-    if (this.currentIndex < this.images.length - 1) {
-      this.currentIndex++;
-      this.resetTransformations();
-    }
-  }
+  // 2. Test for truncateText
+  describe('truncateText', () => {
+    test('should truncate string if length exceeds the limit', () => {
+      expect(Utils.truncateText('Hello World', 5)).toBe('Hello...');
+    });
 
-  prevImage() {
-    if (this.currentIndex > 0) {
-      this.currentIndex--;
-      this.resetTransformations();
-    }
-  }
+    test('should return the full string if length is within the limit', () => {
+      expect(Utils.truncateText('Hello', 10)).toBe('Hello');
+    });
 
-  zoomIn() {
-    this.scale += 0.1;
-  }
+    test('should handle empty string', () => {
+      expect(Utils.truncateText('', 5)).toBe('');
+    });
+  });
 
-  zoomOut() {
-    if (this.scale > 0.1) this.scale -= 0.1;
-  }
+  // 3. Test for findNestedElementDetails (assumes certain object structure)
+  describe('findNestedElementDetails', () => {
+    const mockObject = {
+      a: {
+        b: {
+          c: 42
+        }
+      }
+    };
 
-  rotateClockwise() {
-    this.rotation += 15;
-  }
+    const findFunction = (value: any, key: any) => value === 42; // Example search function
 
-  rotateCounterClockwise() {
-    this.rotation -= 15;
-  }
+    test('should find nested element and return correct details', () => {
+      const result = Utils.findNestedElementDetails(findFunction, mockObject);
+      expect(result).toEqual({ parents: ['a', 'b'], path: ['a', 'b', 'c'], node: 42 });
+    });
 
-  resetTransformations() {
-    this.scale = 1;
-    this.rotation = 0;
-    this.translateX = 0;
-    this.translateY = 0;
-    this.lastTranslateX = 0;
-    this.lastTranslateY = 0;
-  }
+    test('should return undefined for elements not found', () => {
+      const result = Utils.findNestedElementDetails((val: any) => val === 100, mockObject);
+      expect(result).toEqual(undefined);
+    });
+  });
 
-  startPan(event: MouseEvent | TouchEvent) {
-    this.isPanning = true;
-    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
+  // 4. Test for getEnumValueByEnumKey
+  describe('getEnumValueByEnumKey', () => {
+    const mockEnum = { A: 'Value A', B: 'Value B' };
 
-    this.startX = clientX - this.lastTranslateX;
-    this.startY = clientY - this.lastTranslateY;
-  }
+    test('should return the correct enum value for a valid key', () => {
+      expect(Utils.getEnumValueByEnumKey(mockEnum, 'A')).toBe('Value A');
+    });
 
-  pan(event: MouseEvent | TouchEvent) {
-    if (!this.isPanning) return;
-
-    const clientX = event instanceof MouseEvent ? event.clientX : event.touches[0].clientX;
-    const clientY = event instanceof MouseEvent ? event.clientY : event.touches[0].clientY;
-
-    this.translateX = clientX - this.startX;
-    this.translateY = clientY - this.startY;
-  }
-
-  endPan() {
-    this.isPanning = false;
-    this.lastTranslateX = this.translateX;
-    this.lastTranslateY = this.translateY;
-  }
-
-  toggleFullScreen() {
-    // Full-screen code as before
-  }
-}
-
-
-<div class="image-container"
-     (mousedown)="startPan($event)"
-     (mousemove)="pan($event)"
-     (mouseup)="endPan()"
-     (mouseleave)="endPan()"
-     (touchstart)="startPan($event)"
-     (touchmove)="pan($event)"
-     (touchend)="endPan()">
-  <img appLazyLoad="{{currentImage}}"
-       class="current-image"
-       [style.transform]="'translate(' + translateX + 'px, ' + translateY + 'px) scale(' + scale + ') rotate(' + rotation + 'deg)'"
-       alt="Image Viewer">
-</div>
-
-
-.image-container {
-  display: inline-block;
-  max-width: 100%;
-  max-height: 500px;
-  overflow: hidden;
-  position: relative;
-  cursor: grab;
-}
-
-.image-container:active {
-  cursor: grabbing;
-}
-
-img.current-image {
-  transition: transform 0.1s ease;
-  cursor: move;
-  user-select: none;
-  -webkit-user-drag: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-}
+    test('should return undefined for an invalid key', () => {
+      expect(Utils.getEnumValueByEnumKey(mockEnum, 'Z')).toBe(undefined);
+    });
+  });
+});
