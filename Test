@@ -1,49 +1,138 @@
-// utils.test.ts
+import { Router } from './yourRouterModule'; // Adjust your import according to your file
+import { Params } from './yourParamsModule'; // Adjust this to match your actual Params type
 
-import { processNode, loop, make } from './utils';  // Adjust the import path
+describe('openInNewTabWithQueryParams', () => {
+  const mockRouter = {
+    createUrlTree: jest.fn().mockReturnValue({
+      toString: jest.fn().mockReturnValue('testPath'),
+    }),
+  } as unknown as Router;
 
-describe('Testing processNode function', () => {
-  it('should return correct path and parents for a valid node', () => {
-    const parents: any[] = [];
-    const path: any[] = [];
-    const node = { key1: 'value1', key2: 'value2' };
-    const result = processNode(parents, path, node);
-    expect(result).toHaveProperty('path');
-    expect(result).toHaveProperty('parents');
+  beforeEach(() => {
+    jest.spyOn(window, 'open').mockImplementation(() => {});
+    jest.spyOn(window, 'location', 'get').mockReturnValue({
+      href: 'http://localhost',
+    } as any);
   });
 
-  it('should return an empty path if the node is undefined', () => {
-    const result = processNode([], [], undefined);
-    expect(result.path).toEqual([]);
-    expect(result.parents).toEqual([]);
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('should open a new tab with query params', () => {
+    const params: Params = { queryParams: { test: '123' } };
+    const namedRoute = 'testRoute';
+
+    openInNewTabWithQueryParams(mockRouter, namedRoute, params);
+
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
+    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath?test=123', '_blank', 'noopener');
+  });
+
+  it('should open a new tab without query params when params are null', () => {
+    const params: Params = { queryParams: null };
+    const namedRoute = 'testRoute';
+
+    openInNewTabWithQueryParams(mockRouter, namedRoute, params);
+
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
+    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath', '_blank', 'noopener');
+  });
+});
+
+
+
+
+describe('openInNewTabWithRouterParams', () => {
+  const mockRouter = {
+    createUrlTree: jest.fn().mockReturnValue({
+      toString: jest.fn().mockReturnValue('testPath'),
+    }),
+  } as unknown as Router;
+
+  beforeEach(() => {
+    jest.spyOn(window, 'open').mockImplementation(() => {});
+    jest.spyOn(window, 'location', 'get').mockReturnValue({
+      href: 'http://localhost',
+    } as any);
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('should open a new tab with router params', () => {
+    openInNewTabWithRouterParams('testRoute', mockRouter);
+
+    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
+    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath', '_blank', 'noopener');
   });
 });
 
-describe('Testing loop function', () => {
-  it('should process a node correctly', () => {
-    const node = { key1: 'value1', key2: 'value2' };
-    const result = loop([node], []);
-    expect(result.path).toBeDefined();
-    expect(result.parents).toBeDefined();
+
+describe('listToTree', () => {
+  it('should convert a list to a tree structure', () => {
+    const list = [
+      { id: 1, groupId: '1', parentGroupId: null },
+      { id: 2, groupId: '2', parentGroupId: '1' },
+      { id: 3, groupId: '3', parentGroupId: '1' },
+      { id: 4, groupId: '4', parentGroupId: '2' },
+    ];
+
+    const expectedTree = [
+      {
+        id: 1,
+        groupId: '1',
+        parentGroupId: null,
+        children: [
+          {
+            id: 2,
+            groupId: '2',
+            parentGroupId: '1',
+            children: [
+              {
+                id: 4,
+                groupId: '4',
+                parentGroupId: '2',
+                children: [],
+              },
+            ],
+          },
+          {
+            id: 3,
+            groupId: '3',
+            parentGroupId: '1',
+            children: [],
+          },
+        ],
+      },
+    ];
+
+    const result = listToTree(list, 'groupId', 'parentGroupId');
+    expect(result).toEqual(expectedTree);
   });
 
-  it('should handle undefined node', () => {
-    const result = loop([], []);
-    expect(result.path).toEqual([]);
-    expect(result.parents).toEqual([]);
+  it('should handle an empty list', () => {
+    const result = listToTree([], 'groupId', 'parentGroupId');
+    expect(result).toEqual([]);
+  });
+
+  it('should handle a single node with no children', () => {
+    const list = [
+      { id: 1, groupId: '1', parentGroupId: null },
+    ];
+
+    const expectedTree = [
+      {
+        id: 1,
+        groupId: '1',
+        parentGroupId: null,
+        children: [],
+      },
+    ];
+
+    const result = listToTree(list, 'groupId', 'parentGroupId');
+    expect(result).toEqual(expectedTree);
   });
 });
 
-describe('Testing make function', () => {
-  it('should return the node as-is when keys are empty', () => {
-    const node = { key1: 'value1' };
-    const result = make(node);
-    expect(result).toEqual(node);
-  });
-
-  it('should use keys from utils if not provided', () => {
-    const node = { key1: 'value1', key2: 'value2' };
-    const result = make(node);
-    expect(result).toBeDefined();
-  });
-});
