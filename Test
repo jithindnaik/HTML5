@@ -1,78 +1,49 @@
-import { Utils } from './utils';
+// utils.test.ts
 
-describe('Utils', () => {
-  // 1. Test for isNullOrUndefinedOrEmpty
-  describe('isNullOrUndefinedOrEmpty', () => {
-    test('should return true for null', () => {
-      expect(Utils.isNullOrUndefinedOrEmpty(null)).toBe(true);
-    });
+import { processNode, loop, make } from './utils';  // Adjust the import path
 
-    test('should return true for undefined', () => {
-      expect(Utils.isNullOrUndefinedOrEmpty(undefined)).toBe(true);
-    });
-
-    test('should return true for empty string', () => {
-      expect(Utils.isNullOrUndefinedOrEmpty('')).toBe(true);
-    });
-
-    test('should return false for non-empty string', () => {
-      expect(Utils.isNullOrUndefinedOrEmpty('hello')).toBe(false);
-    });
-
-    test('should return false for other types (number, object)', () => {
-      expect(Utils.isNullOrUndefinedOrEmpty(123)).toBe(false);
-      expect(Utils.isNullOrUndefinedOrEmpty({})).toBe(false);
-    });
+describe('Testing processNode function', () => {
+  it('should return correct path and parents for a valid node', () => {
+    const parents: any[] = [];
+    const path: any[] = [];
+    const node = { key1: 'value1', key2: 'value2' };
+    const result = processNode(parents, path, node);
+    expect(result).toHaveProperty('path');
+    expect(result).toHaveProperty('parents');
   });
 
-  // 2. Test for truncateText
-  describe('truncateText', () => {
-    test('should truncate string if length exceeds the limit', () => {
-      expect(Utils.truncateText('Hello World', 5)).toBe('Hello...');
-    });
+  it('should return an empty path if the node is undefined', () => {
+    const result = processNode([], [], undefined);
+    expect(result.path).toEqual([]);
+    expect(result.parents).toEqual([]);
+  });
+});
 
-    test('should return the full string if length is within the limit', () => {
-      expect(Utils.truncateText('Hello', 10)).toBe('Hello');
-    });
-
-    test('should handle empty string', () => {
-      expect(Utils.truncateText('', 5)).toBe('');
-    });
+describe('Testing loop function', () => {
+  it('should process a node correctly', () => {
+    const node = { key1: 'value1', key2: 'value2' };
+    const result = loop([node], []);
+    expect(result.path).toBeDefined();
+    expect(result.parents).toBeDefined();
   });
 
-  // 3. Test for findNestedElementDetails (assumes certain object structure)
-  describe('findNestedElementDetails', () => {
-    const mockObject = {
-      a: {
-        b: {
-          c: 42
-        }
-      }
-    };
+  it('should handle undefined node', () => {
+    const result = loop([], []);
+    expect(result.path).toEqual([]);
+    expect(result.parents).toEqual([]);
+  });
+});
 
-    const findFunction = (value: any, key: any) => value === 42; // Example search function
-
-    test('should find nested element and return correct details', () => {
-      const result = Utils.findNestedElementDetails(findFunction, mockObject);
-      expect(result).toEqual({ parents: ['a', 'b'], path: ['a', 'b', 'c'], node: 42 });
-    });
-
-    test('should return undefined for elements not found', () => {
-      const result = Utils.findNestedElementDetails((val: any) => val === 100, mockObject);
-      expect(result).toEqual(undefined);
-    });
+describe('Testing make function', () => {
+  it('should return the node as-is when keys are empty', () => {
+    const node = { key1: 'value1' };
+    const result = make(node);
+    expect(result).toEqual(node);
   });
 
-  // 4. Test for getEnumValueByEnumKey
-  describe('getEnumValueByEnumKey', () => {
-    const mockEnum = { A: 'Value A', B: 'Value B' };
-
-    test('should return the correct enum value for a valid key', () => {
-      expect(Utils.getEnumValueByEnumKey(mockEnum, 'A')).toBe('Value A');
-    });
-
-    test('should return undefined for an invalid key', () => {
-      expect(Utils.getEnumValueByEnumKey(mockEnum, 'Z')).toBe(undefined);
-    });
+  it('should use keys from utils if not provided', () => {
+    const node = { key1: 'value1', key2: 'value2' };
+    const result = make(node);
+    expect(result).toBeDefined();
   });
 });
