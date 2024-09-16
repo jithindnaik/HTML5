@@ -1,69 +1,26 @@
-describe('deepCopy', () => {
-  it('should return a deep copy of the given object', () => {
-    const obj = { a: 1, b: { c: 2 } };
-    const copy = MyClass.deepCopy(obj);
-    
-    expect(copy).toEqual(obj);
-    expect(copy).not.toBe(obj); // Ensures it's a deep copy, not a reference
-    expect(copy.b).not.toBe(obj.b); // Nested object should also be deep copied
-  });
-
-  it('should handle Date objects correctly', () => {
-    const date = new Date();
-    const copy = MyClass.deepCopy(date);
-
-    expect(copy).toEqual(date);
-    expect(copy).not.toBe(date);
-  });
-
-  it('should handle arrays correctly', () => {
-    const arr = [1, 2, [3, 4]];
-    const copy = MyClass.deepCopy(arr);
-
-    expect(copy).toEqual(arr);
-    expect(copy).not.toBe(arr);
-    expect(copy[2]).not.toBe(arr[2]); // Nested array should also be deep copied
-  });
-});
-
-describe('toInteger', () => {
-  it('should convert a string number to an integer', () => {
-    expect(MyClass.toInteger('123')).toBe(123);
-  });
-
-  it('should return NaN for invalid inputs', () => {
-    expect(MyClass.toInteger('abc')).toBeNaN();
-  });
-});
-
-describe('isNumber', () => {
-  it('should return true if the value is a valid number', () => {
-    expect(MyClass.isNumber(123)).toBe(true);
-    expect(MyClass.isNumber('123')).toBe(true);
-  });
-
-  it('should return false if the value is not a number', () => {
-    expect(MyClass.isNumber('abc')).toBe(false);
-    expect(MyClass.isNumber(null)).toBe(false);
-  });
-});
-
-describe('padForSingleDigit', () => {
-  it('should pad a single digit number with a leading zero', () => {
-    expect(MyClass.padForSingleDigit(5)).toBe('05');
-  });
-
-  it('should not pad double-digit numbers', () => {
-    expect(MyClass.padForSingleDigit(12)).toBe('12');
-  });
-});
-
-describe('convertDateToDateTimeString', () => {
-  it('should convert a date object to a formatted string', () => {
-    const date = new Date('2023-01-01T12:34:56');
-    const formatted = MyClass.convertDateToDateTimeString(date);
-
-    expect(formatted).toBe('01/01/2023 12:34 PM'); // Adjust this based on the expected format
-  });
-});
-
+{
+  message: "Request failed with status code 404",
+  name: "Error",
+  response: {
+    status: 404,
+    statusText: "Not Found",
+    headers: {
+      "content-type": "application/json"
+    },
+    config: {
+      url: "/api/data",
+      method: "get",
+      headers: {
+        "Accept": "application/json"
+      },
+      timeout: 5000
+    },
+    data: {
+      error: "Resource not found",
+      details: "The requested resource could not be found on the server"
+    }
+  },
+  request: {
+    // Request object details (URL, method, headers, etc.)
+  }
+}
