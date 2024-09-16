@@ -1,138 +1,69 @@
-import { Router } from './yourRouterModule'; // Adjust your import according to your file
-import { Params } from './yourParamsModule'; // Adjust this to match your actual Params type
-
-describe('openInNewTabWithQueryParams', () => {
-  const mockRouter = {
-    createUrlTree: jest.fn().mockReturnValue({
-      toString: jest.fn().mockReturnValue('testPath'),
-    }),
-  } as unknown as Router;
-
-  beforeEach(() => {
-    jest.spyOn(window, 'open').mockImplementation(() => {});
-    jest.spyOn(window, 'location', 'get').mockReturnValue({
-      href: 'http://localhost',
-    } as any);
+describe('deepCopy', () => {
+  it('should return a deep copy of the given object', () => {
+    const obj = { a: 1, b: { c: 2 } };
+    const copy = MyClass.deepCopy(obj);
+    
+    expect(copy).toEqual(obj);
+    expect(copy).not.toBe(obj); // Ensures it's a deep copy, not a reference
+    expect(copy.b).not.toBe(obj.b); // Nested object should also be deep copied
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
+  it('should handle Date objects correctly', () => {
+    const date = new Date();
+    const copy = MyClass.deepCopy(date);
+
+    expect(copy).toEqual(date);
+    expect(copy).not.toBe(date);
   });
 
-  it('should open a new tab with query params', () => {
-    const params: Params = { queryParams: { test: '123' } };
-    const namedRoute = 'testRoute';
+  it('should handle arrays correctly', () => {
+    const arr = [1, 2, [3, 4]];
+    const copy = MyClass.deepCopy(arr);
 
-    openInNewTabWithQueryParams(mockRouter, namedRoute, params);
-
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
-    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath?test=123', '_blank', 'noopener');
-  });
-
-  it('should open a new tab without query params when params are null', () => {
-    const params: Params = { queryParams: null };
-    const namedRoute = 'testRoute';
-
-    openInNewTabWithQueryParams(mockRouter, namedRoute, params);
-
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
-    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath', '_blank', 'noopener');
+    expect(copy).toEqual(arr);
+    expect(copy).not.toBe(arr);
+    expect(copy[2]).not.toBe(arr[2]); // Nested array should also be deep copied
   });
 });
 
-
-
-
-describe('openInNewTabWithRouterParams', () => {
-  const mockRouter = {
-    createUrlTree: jest.fn().mockReturnValue({
-      toString: jest.fn().mockReturnValue('testPath'),
-    }),
-  } as unknown as Router;
-
-  beforeEach(() => {
-    jest.spyOn(window, 'open').mockImplementation(() => {});
-    jest.spyOn(window, 'location', 'get').mockReturnValue({
-      href: 'http://localhost',
-    } as any);
+describe('toInteger', () => {
+  it('should convert a string number to an integer', () => {
+    expect(MyClass.toInteger('123')).toBe(123);
   });
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
-
-  it('should open a new tab with router params', () => {
-    openInNewTabWithRouterParams('testRoute', mockRouter);
-
-    expect(mockRouter.createUrlTree).toHaveBeenCalledWith(['testRoute']);
-    expect(window.open).toHaveBeenCalledWith('http://localhost/testPath', '_blank', 'noopener');
+  it('should return NaN for invalid inputs', () => {
+    expect(MyClass.toInteger('abc')).toBeNaN();
   });
 });
 
-
-describe('listToTree', () => {
-  it('should convert a list to a tree structure', () => {
-    const list = [
-      { id: 1, groupId: '1', parentGroupId: null },
-      { id: 2, groupId: '2', parentGroupId: '1' },
-      { id: 3, groupId: '3', parentGroupId: '1' },
-      { id: 4, groupId: '4', parentGroupId: '2' },
-    ];
-
-    const expectedTree = [
-      {
-        id: 1,
-        groupId: '1',
-        parentGroupId: null,
-        children: [
-          {
-            id: 2,
-            groupId: '2',
-            parentGroupId: '1',
-            children: [
-              {
-                id: 4,
-                groupId: '4',
-                parentGroupId: '2',
-                children: [],
-              },
-            ],
-          },
-          {
-            id: 3,
-            groupId: '3',
-            parentGroupId: '1',
-            children: [],
-          },
-        ],
-      },
-    ];
-
-    const result = listToTree(list, 'groupId', 'parentGroupId');
-    expect(result).toEqual(expectedTree);
+describe('isNumber', () => {
+  it('should return true if the value is a valid number', () => {
+    expect(MyClass.isNumber(123)).toBe(true);
+    expect(MyClass.isNumber('123')).toBe(true);
   });
 
-  it('should handle an empty list', () => {
-    const result = listToTree([], 'groupId', 'parentGroupId');
-    expect(result).toEqual([]);
+  it('should return false if the value is not a number', () => {
+    expect(MyClass.isNumber('abc')).toBe(false);
+    expect(MyClass.isNumber(null)).toBe(false);
+  });
+});
+
+describe('padForSingleDigit', () => {
+  it('should pad a single digit number with a leading zero', () => {
+    expect(MyClass.padForSingleDigit(5)).toBe('05');
   });
 
-  it('should handle a single node with no children', () => {
-    const list = [
-      { id: 1, groupId: '1', parentGroupId: null },
-    ];
+  it('should not pad double-digit numbers', () => {
+    expect(MyClass.padForSingleDigit(12)).toBe('12');
+  });
+});
 
-    const expectedTree = [
-      {
-        id: 1,
-        groupId: '1',
-        parentGroupId: null,
-        children: [],
-      },
-    ];
+describe('convertDateToDateTimeString', () => {
+  it('should convert a date object to a formatted string', () => {
+    const date = new Date('2023-01-01T12:34:56');
+    const formatted = MyClass.convertDateToDateTimeString(date);
 
-    const result = listToTree(list, 'groupId', 'parentGroupId');
-    expect(result).toEqual(expectedTree);
+    expect(formatted).toBe('01/01/2023 12:34 PM'); // Adjust this based on the expected format
   });
 });
 
