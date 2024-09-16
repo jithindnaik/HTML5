@@ -1,34 +1,44 @@
 import { handleError } from './path-to-handleError-file';
+import { throwError } from 'rxjs';
 
 describe('handleError', () => {
-  it('should return an error for string input', () => {
+  it('should return an observable error for string input', (done) => {
     const error = 'This is a string error';
-    
-    const result = handleError(error);
-    
-    expect(result).toEqual(new Error('This is a string error'));
+
+    handleError(error).subscribe({
+      error: (err) => {
+        expect(err.message).toBe('This is a string error');
+        done();
+      }
+    });
   });
 
-  it('should handle a client-side ErrorEvent', () => {
+  it('should handle a client-side ErrorEvent and return an observable', (done) => {
     const errorEvent = {
       error: {
         message: 'Client error message'
       }
     } as ErrorEvent;
-    
-    const result = handleError(errorEvent);
-    
-    expect(result).toEqual(new Error('An error occurred in client: Client error message'));
+
+    handleError(errorEvent).subscribe({
+      error: (err) => {
+        expect(err.message).toBe('An error occurred in client: Client error message');
+        done();
+      }
+    });
   });
 
-  it('should handle a server-side error with status and message', () => {
+  it('should handle a server-side error and return an observable', (done) => {
     const backendError = {
       status: 500,
       message: 'Server error occurred'
     };
-    
-    const result = handleError(backendError);
-    
-    expect(result).toEqual(new Error('Error Code: 500\nMessage: Server error occurred'));
+
+    handleError(backendError).subscribe({
+      error: (err) => {
+        expect(err.message).toBe('Error Code: 500\nMessage: Server error occurred');
+        done();
+      }
+    });
   });
 });
