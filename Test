@@ -1,26 +1,12 @@
-{
-  message: "Request failed with status code 404",
-  name: "Error",
-  response: {
-    status: 404,
-    statusText: "Not Found",
-    headers: {
-      "content-type": "application/json"
-    },
-    config: {
-      url: "/api/data",
-      method: "get",
-      headers: {
-        "Accept": "application/json"
-      },
-      timeout: 5000
-    },
-    data: {
-      error: "Resource not found",
-      details: "The requested resource could not be found on the server"
-    }
-  },
-  request: {
-    // Request object details (URL, method, headers, etc.)
-  }
-}
+import { handleError } from './path-to-handleError-file';
+
+describe('handleError', () => {
+  it('should return an error for string input', () => {
+    const error = 'This is a string error';
+    
+    const result = handleError(error);
+    
+    expect(result).toEqual(new Error('This is a string error'));
+  });
+
+  it('should handle a client-side Error
